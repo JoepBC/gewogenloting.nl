@@ -26,7 +26,7 @@ var Main = /** @class */ (function () {
     }
     Main.Init = function () {
         console.log("GewogenLoting.nl by Joep Bos-Coenraad (/dev/nl)");
-        console.log("TypeScript source available at github.com/joepbc");
+        console.log("TypeScript source available at github.com/JoepBC/gewogenloting.nl");
         new Main();
     };
     Main.DelUnit = function (id) {
@@ -34,16 +34,7 @@ var Main = /** @class */ (function () {
         this.I.participants.removeParticipant(id);
         this.I.refresh();
     };
-    Main.prototype.verbose = function () {
-        var c = 6;
-        var multiplier = 2;
-        var retHTML = "";
-        for (var x = 1; x <= Math.pow(c, multiplier); x++) {
-            var ix = x - 1;
-            retHTML += Lots.spitLotNumber(ix, c, multiplier) + "\n";
-        }
-        getInputElement('verbose').innerHTML = retHTML;
-    };
+    /** Attach some functionality to the buttons in the HTML */
     Main.prototype.assignInput = function () {
         var _this = this;
         getInputElement('add_participant').onclick = function () { _this.addChance(); };
@@ -121,7 +112,9 @@ var Lots = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Lots.spitLotNumber = function (val, base, splitCount) {
+    /** When 'exponent' value is > 1, we want to split the lot numbers/identifiers up,
+     *  to allow for several draws to produce a combined lot id. */
+    Lots.splitLotNumber = function (val, base, splitCount) {
         var tArr = [];
         for (var i = splitCount; i >= 1; i--) {
             var jx = Math.floor(val / (Math.pow(base, i - 1)));
@@ -131,8 +124,9 @@ var Lots = /** @class */ (function () {
         return tArr.join('-');
     };
     Lots.prototype.splitLotNumber = function (val) {
-        return Lots.spitLotNumber(val, this.lotsBase, this.lotsMultiplier);
+        return Lots.splitLotNumber(val, this.lotsBase, this.lotsMultiplier);
     };
+    /** How many lots exist that have no space left? */
     Lots.prototype.getFullLotCount = function (excludeId) {
         var retVal = 0;
         for (var _i = 0, _a = this.list; _i < _a.length; _i++) {
@@ -142,27 +136,15 @@ var Lots = /** @class */ (function () {
         }
         return retVal;
     };
-    Lots.prototype.getFilledLotNr = function (num, mustHaveId) {
-        var count = 0;
-        for (var _i = 0, _a = this.list; _i < _a.length; _i++) {
-            var lot = _a[_i];
-            if (!lot.hasSpaceLeft && ((mustHaveId == undefined) || (lot.hasParticipantId(mustHaveId)))) {
-                if (count == num)
-                    return lot;
-                count++;
-            }
-        }
-        ;
-        throw ("Looking for filled lot that doesn't exist? - " + num + " / " + count);
-    };
+    /** Cleanup the list before creating a new one. */
     Lots.prototype.clear = function () {
-        //cleanup list
         this.list = [];
-        //make new (empty) lots
+        //create new (empty) lots
         for (var iLot = 0; iLot < this.lotsRequired; iLot++) {
             this.list.push(new Lot(this.lotSpaces));
         }
     };
+    /** Push the lot contents to the HTML */
     Lots.prototype.visualiseLots = function () {
         if (Lots.I.getFullLotCount() < 1) {
             return;
@@ -282,18 +264,6 @@ var Participants = /** @class */ (function () {
                 this.list.splice(iPart, 1);
         }
     };
-    Participants.prototype.getRandomPoolPart = function () {
-        var poolSpace = this.poolSpace;
-        var poolNr = Math.ceil(Math.random() * poolSpace);
-        var remainPool = poolNr;
-        for (var _i = 0, _a = this.list; _i < _a.length; _i++) {
-            var part = _a[_i];
-            if (part.poolCount <= remainPool)
-                return part;
-            remainPool -= part.poolCount;
-        }
-        throw ("poolNr (" + poolNr + ") not found in poolspace (" + poolSpace + ") [remaining: " + remainPool + "]");
-    };
     Participants.prototype.addParticipant = function (id, chance) {
         this.list.push(new Participant(id, chance));
         var partID = getInputElement("part_id").value = numberToBase26(this.list.length + 1);
@@ -340,6 +310,10 @@ var Participants = /** @class */ (function () {
         if (decimals === void 0) { decimals = 3; }
         return (100 * val).toFixed(decimals) + "%";
     };
+    Participants.prototype.prettyScalar = function (val, decimals) {
+        if (decimals === void 0) { decimals = 3; }
+        return val.toFixed(decimals);
+    };
     Participants.prototype.min1 = function (value) {
         return Math.max(1, value);
     };
@@ -356,9 +330,9 @@ var Participants = /** @class */ (function () {
             maxRelDeficit = Math.max(part.remainder / this.min1(part.poolCount), maxRelDeficit);
             //console.log(maxRelDeficit + " - " + part.poolCount + " " + this.min1(part.poolCount) + " rem:" + part.remainder);
         }
-        poolText = "Totaal afrondingen: " + (totalBenefit).toFixed(3) + "\n----\n" + poolText;
-        poolText = "Grootste relatieve voordeel:" + this.prettyPercent(maxRelBenefit) + "\n" + poolText;
-        poolText = "Grootste relatieve nadeel:" + this.prettyPercent(maxRelDeficit) + "\n" + poolText;
+        poolText = "Totaal afrondingen: " + this.prettyScalar(totalBenefit) + "\n----\n" + poolText;
+        poolText = "Grootste relatieve voordeel:" + this.prettyScalar(maxRelBenefit) + "\n" + poolText;
+        poolText = "Grootste relatieve nadeel:" + this.prettyScalar(maxRelDeficit) + "\n" + poolText;
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
         getInputElement("partPools").value = poolText;

@@ -24,7 +24,7 @@ function rndFromArr<T>(anArray: T[]): T {
 class Main {
     static Init() {
         console.log("GewogenLoting.nl by Joep Bos-Coenraad (/dev/nl)");
-        console.log("TypeScript source available at github.com/joepbc");
+        console.log("TypeScript source available at github.com/JoepBC/gewogenloting.nl");
 
         new Main();
     }
@@ -51,21 +51,12 @@ class Main {
         Main.I = this;
     }
 
-    verbose() {
-        let c = 6;
-        let multiplier = 2;
-        let retHTML = "";
-        for (let x = 1; x <= Math.pow(c, multiplier); x++) {
-            let ix = x - 1;
-            retHTML += Lots.spitLotNumber(ix, c, multiplier) + "\n";
-        }
-        getInputElement('verbose').innerHTML = retHTML;
-    }
-
+    /** Attach some functionality to the buttons in the HTML */
     assignInput() {
         getInputElement('add_participant').onclick = () => { this.addChance() }
         getInputElement('lots_refresh').onclick = () => { this.refresh() }
     }
+
     addChance() {
         /* Read input form values */
         let partID = getInputElement("part_id").value;
@@ -141,7 +132,9 @@ class Lots {
         return totalSpaces;
     }
 
-    static spitLotNumber(val: number, base: number, splitCount: number) {
+    /** When 'exponent' value is > 1, we want to split the lot numbers/identifiers up,
+     *  to allow for several draws to produce a combined lot id. */
+    static splitLotNumber(val: number, base: number, splitCount: number) {
         let tArr = [];
         for (let i = splitCount; i >= 1; i--) {
             let jx = Math.floor(val / (Math.pow(base, i - 1)));
@@ -151,12 +144,12 @@ class Lots {
         return tArr.join('-');
     }
 
-
     splitLotNumber(val: number) {
-        return Lots.spitLotNumber(val, this.lotsBase, this.lotsMultiplier);
+        return Lots.splitLotNumber(val, this.lotsBase, this.lotsMultiplier);
     }
 
-    getFullLotCount(excludeId?: string) {
+    /** How many lots exist that have no space left? */
+    getFullLotCount(excludeId?: string): number {
         let retVal = 0;
         for (let aLot of this.list) {
             if (!aLot.hasSpaceLeft) retVal++;
@@ -164,27 +157,16 @@ class Lots {
         return retVal;
     }
 
-    getFilledLotNr(num: number, mustHaveId?: string): Lot {
-        let count = 0;
-        for (let lot of this.list) {
-            if (!lot.hasSpaceLeft && ((mustHaveId == undefined) || (lot.hasParticipantId(mustHaveId)))) {
-                if (count == num)
-                    return lot;
-                count++
-            }
-        };
-        throw ("Looking for filled lot that doesn't exist? - " + num + " / " + count)
-    }
-
+    /** Cleanup the list before creating a new one. */
     clear() {
-        //cleanup list
         this.list = [];
-        //make new (empty) lots
+        //create new (empty) lots
         for (let iLot = 0; iLot < this.lotsRequired; iLot++) {
             this.list.push(new Lot(this.lotSpaces));
         }
     }
 
+    /** Push the lot contents to the HTML */
     visualiseLots() {
         if (Lots.I.getFullLotCount() < 1) {
             return;
@@ -291,18 +273,6 @@ class Participants {
         }
     }
 
-    getRandomPoolPart(): Participant {
-        let poolSpace = this.poolSpace;
-        let poolNr = Math.ceil(Math.random() * poolSpace);
-        let remainPool = poolNr;
-        for (let part of this.list) {
-            if (part.poolCount <= remainPool)
-                return part;
-            remainPool -= part.poolCount;
-        }
-        throw ("poolNr (" + poolNr + ") not found in poolspace (" + poolSpace + ") [remaining: " + remainPool + "]");
-    }
-
     addParticipant(id: string, chance: number) {
         this.list.push(new Participant(id, chance));
         let partID = getInputElement("part_id").value = numberToBase26(this.list.length + 1);
@@ -342,14 +312,18 @@ class Participants {
         }
         // distribute leftovers by highest remainders
         for (let leftOver = 0; leftOver < (Lots.I.totalSpaceCount - totalDistributed); leftOver++) {
-            let remainder = this.addRemainder().remainder;
+            let remainder = this.distributeARemainder().remainder;
         }
     }
 
     prettyPercent(val: number, decimals = 3) {
         return (100 * val).toFixed(decimals) + "%";
     }
+    prettyScalar(val: number, decimals = 3) {
+        return val.toFixed(decimals);
+    }
 
+    /** make sure a value is at least 1.*/
     min1(value: number) {
         return Math.max(1, value);
     }
@@ -364,17 +338,17 @@ class Participants {
             totalBenefit += part.benefit;
             maxRelBenefit = Math.max(part.benefit / this.min1(part.poolCount - 1), maxRelBenefit);
             maxRelDeficit = Math.max(part.remainder / this.min1(part.poolCount), maxRelDeficit);
-            //console.log(maxRelDeficit + " - " + part.poolCount + " " + this.min1(part.poolCount) + " rem:" + part.remainder);
         }
-        poolText = "Totaal afrondingen: " + (totalBenefit).toFixed(3) + "\n----\n" + poolText;
-        poolText = "Grootste relatieve voordeel:" + this.prettyPercent(maxRelBenefit) + "\n" + poolText;
-        poolText = "Grootste relatieve nadeel:" + this.prettyPercent(maxRelDeficit) + "\n" + poolText;
+        poolText = "Totaal afrondingen: " + this.prettyScalar(totalBenefit) + "\n----\n" + poolText;
+        poolText = "Grootste relatieve voordeel:" + this.prettyScalar(maxRelBenefit) + "\n" + poolText;
+        poolText = "Grootste relatieve nadeel:" + this.prettyScalar(maxRelDeficit) + "\n" + poolText;
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
         getInputElement("partPools").value = poolText;
     }
 
-    addRemainder() {
+    /** Distribute a single pool item to a participant pool based on remainders */
+    distributeARemainder() {
         let largestPart: Participant[] = [];
         let largestRemainder = 0;
         for (let part of this.list) {
@@ -396,7 +370,7 @@ class Participants {
         return selPart;
     }
 
-}
+} // end class Participants
 
 
 
@@ -467,10 +441,7 @@ class Participant {
         this.remainder = 0;
     }
 
-    toString() {
-        return this.id + "(" + this.chance + "~" + this.poolCount + ")";
-    }
-
+    /** Distribute slots in the pool of this participant over the lots with free spaces. */
     distribute() {
         let freeLots = this.lotsWithoutNotFull()
         if (freeLots.length < 1) {
@@ -490,7 +461,11 @@ class Participant {
         }
         return true;
     }
-}
+
+    toString() {
+        return this.id + "(" + this.chance + "~" + this.poolCount + ")";
+    }
+} //end class Participant
 
 class Lot {
 
@@ -538,4 +513,4 @@ class Lot {
     toString() {
         return this.spaces.join("^");
     }
-}
+} // End class Lot

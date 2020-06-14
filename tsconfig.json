@@ -1,0 +1,13 @@
+{  
+  "compilerOptions": {
+	  "outDir": "../../public_html/gewogenloting.nl/js",
+	"target": "es5",
+	"module":"amd",
+	"declaration": true,
+	"sourceMap": true,
+	"lib": ["es2017", "dom", "scripthost"],
+	"strict": true,
+	"noImplicitAny": true,
+	"strictNullChecks": false
+  }
+}

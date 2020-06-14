@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="nl">
+
+<head>
+    <title>GewogenLoting.nl</title>
+    <!-- tooltip style copied from https://www.w3schools.com/css/tryit.asp?filename=trycss_tooltip -->
+    <style>
+        table {
+            border: 1px solid black;
+        }
+
+        kbd {
+            font-size: large;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        span.operation {
+            cursor: pointer;
+        }
+
+        th {
+            text-align: right;
+        }
+
+        textarea.output {
+            background-color: orange;
+        }
+
+        div {
+            float: left;
+            margin-left: 0.6em;
+            margin-right: 0.6em;
+        }
+
+        div.parttable {
+            float: left;
+            margin: 0.1em;
+        }
+
+        div.stack {
+            width: 100%;
+            float: center;
+        }
+
+        td {
+            text-align: right;
+            padding-left: 0.2em;
+        }
+
+        td.text {
+            text-align: left;
+
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 16em;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1;
+            top: 125%;
+            left: 50%;
+            margin-left: -60px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>GewogenLoting.nl</h1>
+    <h2>Transparant (controleerbaar) dingen ongelijk verloten</h2>
+    <div>
+        <div>
+            <h3>Instellingen</h3>
+            <table>
+                <tr>
+                    <td class="text">Aantal loten:</td>
+                    <td><input type="number" id="lotCount" value="10" step="1" /></td>
+                    <td>
+                        <div class="tooltip">&#9432;<span class="tooltiptext">Het aantal loten dat wordt gebruikt. Kies
+                                hier een aantal dat overeenkomt met de fysieke wijze van loten: het aantal balletjes in
+                                een bingo-molen, het aantal ogen op een dobbelsteen (of een macht daarvan), het aantal
+                                briefjes in een hoed, etc.</span></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text">Exponent <em>(bij twijfel gewoon op 1 laten)</em>:</td>
+                    <td><input type="number" id="lotMultiplier" value="1" step="1" /></td>
+                    <td>
+                        <div class="tooltip">&#9432;<span class="tooltiptext">In geval van twijfel, laat dit getal op
+                                1. <br /><br />Maar stel, je wil met een dobbelsteen (6 kansen) of een bingomolen (75
+                                kansen) een groter aantal loten gebruiken, voeg hier dan een waarde in die overeenkomt
+                                met het aantal worpen of trekkingen, en lees het lotnummer af in de volgorde van de
+                                trekkingen.</span></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text">Aantal plekken per lot:</td>
+                    <td><input type="number" id="lotSpaces" value="2" step="1" /></td>
+                    <td>
+                        <div class="tooltip">&#9432;<span class="tooltiptext">Zoveel plekken zijn er te verdelen per
+                                lot</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td> <input type="submit" id="lots_refresh" value="Vernieuwen"></td>
+                </tr>
+                <!--<tr>
+                    <td class="text">Deelnemers meermaals op lot toestaan:</td>
+                    <td><input type="checkbox" id="allowDoubles" value="false" disabled /></td>
+                    <td>
+                        <div class="tooltip">&#9432;<span class="tooltiptext">(Standaard uitgeschakeld. Vink dit veld
+                                aan
+                                wanneer
+                                een
+                                deelnemer meer dan 1x op een lot kan worden geplaatst. Keuze nog niet
+                                geïmplementeerd)</span></div>
+                    </td>
+                </tr> -->
+            </table>
+        </div>
+
+        <div>
+            <h3>Deelnemer toevoegen:</h3>
+            <table>
+                <tr>
+                    <td class="text">Naam/id deelnemer:</td>
+                    <td><input type="text" id="part_id" value="A" step="1" /><em></em></td>
+                    <td>
+                        <div class="tooltip">&#9432;<span class="tooltiptext">Een naam/symbool waarmee de deelnemer op
+                                het lot wordt aangeduid</span></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text">Score/kans:</td>
+                    <td><input type="number" id="part_chance" value="1" /></td>
+                    <td>
+                        <div class="tooltip">&#9432;<span class="tooltiptext">(Geef hier een numerieke waarde op die
+                                correleert
+                                met de
+                                kans op een lot. Gebruik . voor decimalen)</span></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="submit" id="add_participant" value="Voeg toe"></td>
+                    <td />
+                </tr>
+            </table>
+        </div>
+
+        <div class="stack">
+            <h3>Deelnemerslijst:</h3>
+            <div class="frame" id="participantsList">
+                <div class="tooltip">&#9432;<span class="tooltiptext">(voeg deelnemers toe, dan verschijnt hier een
+                        overzicht)</span></div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="stack">
+        <div>
+            <h3 class="tooltip">Overzicht loten &#9432;<span class="tooltiptext">Kopieer inhoud van het tekstvak
+                    hieronder in spreadsheetprogramma, of print/publiceer het als tekst. <br />Deze data wil je
+                    v&oacute;&oacute;r de trekking/loting met de belanghebbenden delen.</span></h3><br />
+            <textarea class="output" id="lotsText" cols="64" rows="16">Voeg eerst genoeg deelnemers toe.</textarea>
+        </div>
+
+
+        <div>
+            <h3 class="tooltip">Overzicht deelnemerspoelen &#9432;<span class="tooltiptext">Het aantal vermeldingen
+                    van de deelnemers over alle loten. Streef naar een zo laag mogelijke afrondingsmarge door het
+                    aantal loten aan te passen.</span></h3><br />
+            <textarea id="partPools" cols="64" rows="16">Voeg eerst genoeg deelnemers toe.</textarea>
+        </div>
+    </div>
+
+    <script src="./js/gewogenloting.js" type="text/javascript">
+    </script>
+
+</body>
+
+</html>

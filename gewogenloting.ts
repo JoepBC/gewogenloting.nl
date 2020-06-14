@@ -30,7 +30,6 @@ class Main {
     }
 
     static DelUnit(id: string) {
-        console.log("Deleting " + id);
         this.I.participants.removeParticipant(id);
         this.I.refresh();
     }
@@ -112,7 +111,7 @@ class Lots {
     static get I() { return this.Instance }
 
     static FailedAttempts = 0;
-    static MaxFailedAttempts = 1000;
+    static MaxFailedAttempts = 10000;
 
     lotsBase: number = 10;
     get lotsRequired() { return Math.pow(this.lotsBase, this.lotsMultiplier) }
@@ -185,7 +184,6 @@ class Lots {
 
 
     refresh() {
-        console.log("Refreshing list")
         this.clear();
         Participants.I.populateLots();
     }
@@ -259,7 +257,7 @@ class Participants {
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
             if (Lots.FailedAttempts > Lots.MaxFailedAttempts) {
-                console.log("Max attempts reached." + (Lots.FailedAttempts))
+                console.warn("WARNING: Max attempts reached." + (Lots.FailedAttempts))
                 return;
             }
             this.getLargestPool().distribute();
@@ -454,7 +452,7 @@ class Participant {
         freeLot.addPart(this);
         if (this.poolCount > 0) {
             if (Lots.FailedAttempts > Lots.MaxFailedAttempts) {
-                console.log("Exceeded " + Lots.MaxFailedAttempts + " attempts. That's enough. ");
+                console.warn("Warning: exceeded " + Lots.MaxFailedAttempts + " attempts. That's enough. ");
                 return
             };
             this.distribute();

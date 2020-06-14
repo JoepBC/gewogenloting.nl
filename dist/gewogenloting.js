@@ -30,7 +30,6 @@ var Main = /** @class */ (function () {
         new Main();
     };
     Main.DelUnit = function (id) {
-        console.log("Deleting " + id);
         this.I.participants.removeParticipant(id);
         this.I.refresh();
     };
@@ -162,13 +161,12 @@ var Lots = /** @class */ (function () {
         getInputElement("lotsText").style.backgroundColor = "#00FF00";
     };
     Lots.prototype.refresh = function () {
-        console.log("Refreshing list");
         this.clear();
         Participants.I.populateLots();
     };
     Lots.Instance = new Lots();
     Lots.FailedAttempts = 0;
-    Lots.MaxFailedAttempts = 1000;
+    Lots.MaxFailedAttempts = 10000;
     return Lots;
 }());
 /*****************************************************************************
@@ -252,7 +250,7 @@ var Participants = /** @class */ (function () {
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
             if (Lots.FailedAttempts > Lots.MaxFailedAttempts) {
-                console.log("Max attempts reached." + (Lots.FailedAttempts));
+                console.warn("WARNING: Max attempts reached." + (Lots.FailedAttempts));
                 return;
             }
             this.getLargestPool().distribute();
@@ -303,7 +301,7 @@ var Participants = /** @class */ (function () {
         }
         // distribute leftovers by highest remainders
         for (var leftOver = 0; leftOver < (Lots.I.totalSpaceCount - totalDistributed); leftOver++) {
-            var remainder = this.addRemainder().remainder;
+            var remainder = this.distributeARemainder().remainder;
         }
     };
     Participants.prototype.prettyPercent = function (val, decimals) {
@@ -314,6 +312,7 @@ var Participants = /** @class */ (function () {
         if (decimals === void 0) { decimals = 3; }
         return val.toFixed(decimals);
     };
+    /** make sure a value is at least 1.*/
     Participants.prototype.min1 = function (value) {
         return Math.max(1, value);
     };
@@ -328,7 +327,6 @@ var Participants = /** @class */ (function () {
             totalBenefit += part.benefit;
             maxRelBenefit = Math.max(part.benefit / this.min1(part.poolCount - 1), maxRelBenefit);
             maxRelDeficit = Math.max(part.remainder / this.min1(part.poolCount), maxRelDeficit);
-            //console.log(maxRelDeficit + " - " + part.poolCount + " " + this.min1(part.poolCount) + " rem:" + part.remainder);
         }
         poolText = "Totaal afrondingen: " + this.prettyScalar(totalBenefit) + "\n----\n" + poolText;
         poolText = "Grootste relatieve voordeel:" + this.prettyScalar(maxRelBenefit) + "\n" + poolText;
@@ -337,7 +335,8 @@ var Participants = /** @class */ (function () {
         // add string to poolTextArea:
         getInputElement("partPools").value = poolText;
     };
-    Participants.prototype.addRemainder = function () {
+    /** Distribute a single pool item to a participant pool based on remainders */
+    Participants.prototype.distributeARemainder = function () {
         var largestPart = [];
         var largestRemainder = 0;
         for (var _i = 0, _a = this.list; _i < _a.length; _i++) {
@@ -361,7 +360,7 @@ var Participants = /** @class */ (function () {
     };
     Participants.Instance = new Participants();
     return Participants;
-}());
+}()); // end class Participants
 var Participant = /** @class */ (function () {
     function Participant(id, chance) {
         this.poolCount = 0;
@@ -421,9 +420,7 @@ var Participant = /** @class */ (function () {
         // reset remainder
         this.remainder = 0;
     };
-    Participant.prototype.toString = function () {
-        return this.id + "(" + this.chance + "~" + this.poolCount + ")";
-    };
+    /** Distribute slots in the pool of this participant over the lots with free spaces. */
     Participant.prototype.distribute = function () {
         var freeLots = this.lotsWithoutNotFull();
         if (freeLots.length < 1) {
@@ -436,7 +433,7 @@ var Participant = /** @class */ (function () {
         freeLot.addPart(this);
         if (this.poolCount > 0) {
             if (Lots.FailedAttempts > Lots.MaxFailedAttempts) {
-                console.log("Exceeded " + Lots.MaxFailedAttempts + " attempts. That's enough. ");
+                console.warn("Warning: exceeded " + Lots.MaxFailedAttempts + " attempts. That's enough. ");
                 return;
             }
             ;
@@ -444,8 +441,11 @@ var Participant = /** @class */ (function () {
         }
         return true;
     };
+    Participant.prototype.toString = function () {
+        return this.id + "(" + this.chance + "~" + this.poolCount + ")";
+    };
     return Participant;
-}());
+}()); //end class Participant
 var Lot = /** @class */ (function () {
     function Lot(spaceCount) {
         this.spaces = [];
@@ -491,5 +491,5 @@ var Lot = /** @class */ (function () {
         return this.spaces.join("^");
     };
     return Lot;
-}());
+}()); // End class Lot
 //# sourceMappingURL=gewogenloting.js.map

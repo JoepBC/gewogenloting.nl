@@ -70,9 +70,11 @@ declare class Participants {
     fillPools(): void;
     prettyPercent(val: number, decimals?: number): string;
     prettyScalar(val: number, decimals?: number): string;
+    /** make sure a value is at least 1.*/
     min1(value: number): number;
     visualisePools(): void;
-    addRemainder(): Participant;
+    /** Distribute a single pool item to a participant pool based on remainders */
+    distributeARemainder(): Participant;
 }
 declare class Participant {
     constructor(id: string, chance: number);
@@ -92,8 +94,9 @@ declare class Participant {
     /** Lots without this participants that have space left. */
     lotsWithoutNotFull(): Lot[];
     addFromRemainder(): void;
-    toString(): string;
+    /** Distribute slots in the pool of this participant over the lots with free spaces. */
     distribute(): boolean;
+    toString(): string;
 }
 declare class Lot {
     spaces: Participant[];

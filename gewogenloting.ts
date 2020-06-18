@@ -14,6 +14,7 @@ function numberToBase26(integerValue: number, tail = ''): string {
 /**** HTML accessors *****/
 function getInputElement(id: string): HTMLInputElement { return document.getElementById(id) as HTMLInputElement }
 function getDivElement(id: string): HTMLDivElement { return document.getElementById(id) as HTMLDivElement }
+function getPreElement(id: string): HTMLPreElement { return document.getElementById(id) as HTMLPreElement }
 /**** HTML accessors *****/
 
 function rndFromArr<T>(anArray: T[]): T {
@@ -178,8 +179,8 @@ class Lots {
             }
             lotStr += "\n";
         }
-        getInputElement("lotsText").value = lotStr;
-        getInputElement("lotsText").style.backgroundColor = "#00FF00";
+        getPreElement("lotsText").innerText = lotStr;
+        getPreElement("lotsText").style.backgroundColor = "#00FF00";
     }
 
 
@@ -248,11 +249,11 @@ class Participants {
         if (this.list.length < 1) return;
 
         if (this.getLargestPool().poolCount > Lots.I.lotsRequired) {
-            getInputElement("lotsText").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
-            getInputElement("lotsText").style.backgroundColor = "#FF0000";
+            getPreElement("lotsText").innerText = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getPreElement("lotsText").style.backgroundColor = "#FF0000";
             return;
         } else {
-            getInputElement("lotsText").value = "Populating...";
+            getPreElement("lotsText").innerText = "Populating...";
         }
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
@@ -342,7 +343,7 @@ class Participants {
         poolText = "Grootste relatieve nadeel:" + this.prettyScalar(maxRelDeficit) + "\n" + poolText;
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
-        getInputElement("partPools").value = poolText;
+        getPreElement("partPools").innerText = poolText;
     }
 
     /** Distribute a single pool item to a participant pool based on remainders */

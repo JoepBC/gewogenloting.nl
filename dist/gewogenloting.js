@@ -13,6 +13,7 @@ function numberToBase26(integerValue, tail) {
 /**** HTML accessors *****/
 function getInputElement(id) { return document.getElementById(id); }
 function getDivElement(id) { return document.getElementById(id); }
+function getPreElement(id) { return document.getElementById(id); }
 /**** HTML accessors *****/
 function rndFromArr(anArray) {
     return anArray[Math.floor(Math.random() * anArray.length)];
@@ -87,12 +88,12 @@ var Lots = /** @class */ (function () {
     ;
     Object.defineProperty(Lots, "I", {
         get: function () { return this.Instance; },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Lots.prototype, "lotsRequired", {
         get: function () { return Math.pow(this.lotsBase, this.lotsMultiplier); },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Lots.prototype, "totalSpaceCount", {
@@ -108,7 +109,7 @@ var Lots = /** @class */ (function () {
             });
             return totalSpaces;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** When 'exponent' value is > 1, we want to split the lot numbers/identifiers up,
@@ -157,8 +158,8 @@ var Lots = /** @class */ (function () {
             }
             lotStr += "\n";
         }
-        getInputElement("lotsText").value = lotStr;
-        getInputElement("lotsText").style.backgroundColor = "#00FF00";
+        getPreElement("lotsText").innerText = lotStr;
+        getPreElement("lotsText").style.backgroundColor = "#00FF00";
     };
     Lots.prototype.refresh = function () {
         this.clear();
@@ -179,7 +180,7 @@ var Participants = /** @class */ (function () {
     ;
     Object.defineProperty(Participants, "I", {
         get: function () { return this.Instance; },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Participants.prototype, "poolSpace", {
@@ -191,7 +192,7 @@ var Participants = /** @class */ (function () {
             }
             return space;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Participants.prototype, "poolParts", {
@@ -205,7 +206,7 @@ var Participants = /** @class */ (function () {
             }
             return parts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Participants.prototype.idExists = function (id) {
@@ -240,12 +241,12 @@ var Participants = /** @class */ (function () {
         if (this.list.length < 1)
             return;
         if (this.getLargestPool().poolCount > Lots.I.lotsRequired) {
-            getInputElement("lotsText").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
-            getInputElement("lotsText").style.backgroundColor = "#FF0000";
+            getPreElement("lotsText").innerText = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getPreElement("lotsText").style.backgroundColor = "#FF0000";
             return;
         }
         else {
-            getInputElement("lotsText").value = "Populating...";
+            getPreElement("lotsText").innerText = "Populating...";
         }
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
@@ -333,7 +334,7 @@ var Participants = /** @class */ (function () {
         poolText = "Grootste relatieve nadeel:" + this.prettyScalar(maxRelDeficit) + "\n" + poolText;
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
-        getInputElement("partPools").value = poolText;
+        getPreElement("partPools").innerText = poolText;
     };
     /** Distribute a single pool item to a participant pool based on remainders */
     Participants.prototype.distributeARemainder = function () {
@@ -484,7 +485,7 @@ var Lot = /** @class */ (function () {
         get: function () {
             return this.spaces.length < this.spaceCount;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Lot.prototype.toString = function () {

@@ -1,6 +1,5 @@
 window.addEventListener('DOMContentLoaded', () => { Main.Init() });
 
-
 /** Function numberToBase26 by CodeKonami: https://stackoverflow.com/questions/45787459/convert-number-to-alphabet-string-javascript/45787487 */
 function numberToBase26(integerValue: number, tail = ''): string {
     if (integerValue <= 26) {
@@ -14,6 +13,7 @@ function numberToBase26(integerValue: number, tail = ''): string {
 /**** HTML accessors *****/
 function getInputElement(id: string): HTMLInputElement { return document.getElementById(id) as HTMLInputElement }
 function getDivElement(id: string): HTMLDivElement { return document.getElementById(id) as HTMLDivElement }
+function getPreElement(id: string): HTMLPreElement { return document.getElementById(id) as HTMLPreElement }
 /**** HTML accessors *****/
 
 function rndFromArr<T>(anArray: T[]): T {
@@ -45,6 +45,7 @@ class Main {
 
     constructor() {
         this.assignInput();
+        this.updateOutputVisibility();
         this.participants = Participants.I;
         this.lots = Lots.I;
         Main.I = this;
@@ -54,6 +55,33 @@ class Main {
     assignInput() {
         getInputElement('add_participant').onclick = () => { this.addChance() }
         getInputElement('lots_refresh').onclick = () => { this.refresh() }
+        document.forms.namedItem("outputSetting").onchange = () => { this.updateOutputVisibility(); }
+    }
+
+
+    outputSettingVisible(key: string) {
+        const hiddenValue = "none";
+        const shownValue = "block" // or inline, not sure what's best yet.
+        getPreElement("partPools").style.display = (key == "pre" ? shownValue : hiddenValue);
+        getInputElement("partPoolsArea").style.display = (key != "pre" ? shownValue : hiddenValue);
+        getPreElement("lotsText").style.display = (key == "pre" ? shownValue : hiddenValue);
+        getInputElement("lotsTextArea").style.display = (key != "pre" ? shownValue : hiddenValue);
+    }
+
+    updateOutputVisibility() {
+        let outputSetting = document.forms.namedItem("outputSetting");
+        let outputType = outputSetting.elements.namedItem("outputType") as RadioNodeList;
+        switch (outputType.value) {
+            case "preformatted":
+                this.outputSettingVisible("pre");
+                break;
+            case "editable":
+                this.outputSettingVisible("area");
+                break;
+            default:
+                console.warn("WARNING: Visibility option " + outputType.value + " undefined.");
+                break;
+        }
     }
 
     addChance() {
@@ -178,8 +206,10 @@ class Lots {
             }
             lotStr += "\n";
         }
-        getInputElement("lotsText").value = lotStr;
-        getInputElement("lotsText").style.backgroundColor = "#00FF00";
+        getPreElement("lotsText").innerText = lotStr;
+        getPreElement("lotsText").style.backgroundColor = "#00FF00";
+        getInputElement("lotsTextArea").value = lotStr;
+        getInputElement("lotsTextArea").style.backgroundColor = "#00FF00";
     }
 
 
@@ -248,11 +278,14 @@ class Participants {
         if (this.list.length < 1) return;
 
         if (this.getLargestPool().poolCount > Lots.I.lotsRequired) {
-            getInputElement("lotsText").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
-            getInputElement("lotsText").style.backgroundColor = "#FF0000";
+            getPreElement("lotsText").innerText = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getPreElement("lotsText").style.backgroundColor = "#FF0000";
+            getInputElement("lotsTextArea").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getInputElement("lotsTextArea").style.backgroundColor = "#FF0000";
             return;
         } else {
-            getInputElement("lotsText").value = "Populating...";
+            getPreElement("lotsText").innerText = "Populating...";
+            getInputElement("lotsTextArea").value = "Populating...";
         }
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
@@ -342,9 +375,9 @@ class Participants {
         poolText = "Grootste relatieve nadeel:" + this.prettyScalar(maxRelDeficit) + "\n" + poolText;
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
-        getInputElement("partPools").value = poolText;
+        getPreElement("partPools").innerText = poolText;
+        getInputElement("partPoolsArea").value = poolText;
     }
-
     /** Distribute a single pool item to a participant pool based on remainders */
     distributeARemainder() {
         let largestPart: Participant[] = [];

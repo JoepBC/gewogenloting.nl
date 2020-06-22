@@ -1,6 +1,6 @@
 {  
   "compilerOptions": {
-	"outDir": "dist",
+	"outDir": "dist/js",
 	"target": "es5",
 	"module":"amd",
 	"declaration": true,

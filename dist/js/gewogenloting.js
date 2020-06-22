@@ -13,6 +13,7 @@ function numberToBase26(integerValue, tail) {
 /**** HTML accessors *****/
 function getInputElement(id) { return document.getElementById(id); }
 function getDivElement(id) { return document.getElementById(id); }
+function getPreElement(id) { return document.getElementById(id); }
 /**** HTML accessors *****/
 function rndFromArr(anArray) {
     return anArray[Math.floor(Math.random() * anArray.length)];
@@ -20,6 +21,7 @@ function rndFromArr(anArray) {
 var Main = /** @class */ (function () {
     function Main() {
         this.assignInput();
+        this.updateOutputVisibility();
         this.participants = Participants.I;
         this.lots = Lots.I;
         Main.I = this;
@@ -38,6 +40,30 @@ var Main = /** @class */ (function () {
         var _this = this;
         getInputElement('add_participant').onclick = function () { _this.addChance(); };
         getInputElement('lots_refresh').onclick = function () { _this.refresh(); };
+        document.forms.namedItem("outputSetting").onchange = function () { _this.updateOutputVisibility(); };
+    };
+    Main.prototype.outputSettingVisible = function (key) {
+        var hiddenValue = "none";
+        var shownValue = "block"; // or inline, not sure what's best yet.
+        getPreElement("partPools").style.display = (key == "pre" ? shownValue : hiddenValue);
+        getInputElement("partPoolsArea").style.display = (key != "pre" ? shownValue : hiddenValue);
+        getPreElement("lotsText").style.display = (key == "pre" ? shownValue : hiddenValue);
+        getInputElement("lotsTextArea").style.display = (key != "pre" ? shownValue : hiddenValue);
+    };
+    Main.prototype.updateOutputVisibility = function () {
+        var outputSetting = document.forms.namedItem("outputSetting");
+        var outputType = outputSetting.elements.namedItem("outputType");
+        switch (outputType.value) {
+            case "preformatted":
+                this.outputSettingVisible("pre");
+                break;
+            case "editable":
+                this.outputSettingVisible("area");
+                break;
+            default:
+                console.warn("WARNING: Visibility option " + outputType.value + " undefined.");
+                break;
+        }
     };
     Main.prototype.addChance = function () {
         /* Read input form values */
@@ -157,8 +183,10 @@ var Lots = /** @class */ (function () {
             }
             lotStr += "\n";
         }
-        getInputElement("lotsText").value = lotStr;
-        getInputElement("lotsText").style.backgroundColor = "#00FF00";
+        getPreElement("lotsText").innerText = lotStr;
+        getPreElement("lotsText").style.backgroundColor = "#00FF00";
+        getInputElement("lotsTextArea").value = lotStr;
+        getInputElement("lotsTextArea").style.backgroundColor = "#00FF00";
     };
     Lots.prototype.refresh = function () {
         this.clear();
@@ -240,12 +268,15 @@ var Participants = /** @class */ (function () {
         if (this.list.length < 1)
             return;
         if (this.getLargestPool().poolCount > Lots.I.lotsRequired) {
-            getInputElement("lotsText").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
-            getInputElement("lotsText").style.backgroundColor = "#FF0000";
+            getPreElement("lotsText").innerText = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getPreElement("lotsText").style.backgroundColor = "#FF0000";
+            getInputElement("lotsTextArea").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getInputElement("lotsTextArea").style.backgroundColor = "#FF0000";
             return;
         }
         else {
-            getInputElement("lotsText").value = "Populating...";
+            getPreElement("lotsText").innerText = "Populating...";
+            getInputElement("lotsTextArea").value = "Populating...";
         }
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
@@ -333,7 +364,8 @@ var Participants = /** @class */ (function () {
         poolText = "Grootste relatieve nadeel:" + this.prettyScalar(maxRelDeficit) + "\n" + poolText;
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
-        getInputElement("partPools").value = poolText;
+        getPreElement("partPools").innerText = poolText;
+        getInputElement("partPoolsArea").value = poolText;
     };
     /** Distribute a single pool item to a participant pool based on remainders */
     Participants.prototype.distributeARemainder = function () {

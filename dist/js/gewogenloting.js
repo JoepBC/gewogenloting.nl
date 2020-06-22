@@ -21,6 +21,7 @@ function rndFromArr(anArray) {
 var Main = /** @class */ (function () {
     function Main() {
         this.assignInput();
+        this.updateOutputVisibility();
         this.participants = Participants.I;
         this.lots = Lots.I;
         Main.I = this;
@@ -39,6 +40,30 @@ var Main = /** @class */ (function () {
         var _this = this;
         getInputElement('add_participant').onclick = function () { _this.addChance(); };
         getInputElement('lots_refresh').onclick = function () { _this.refresh(); };
+        document.forms.namedItem("outputSetting").onchange = function () { _this.updateOutputVisibility(); };
+    };
+    Main.prototype.outputSettingVisible = function (key) {
+        var hiddenValue = "none";
+        var shownValue = "block"; // or inline, not sure what's best yet.
+        getPreElement("partPools").style.display = (key == "pre" ? shownValue : hiddenValue);
+        getInputElement("partPoolsArea").style.display = (key != "pre" ? shownValue : hiddenValue);
+        getPreElement("lotsText").style.display = (key == "pre" ? shownValue : hiddenValue);
+        getInputElement("lotsTextArea").style.display = (key != "pre" ? shownValue : hiddenValue);
+    };
+    Main.prototype.updateOutputVisibility = function () {
+        var outputSetting = document.forms.namedItem("outputSetting");
+        var outputType = outputSetting.elements.namedItem("outputType");
+        switch (outputType.value) {
+            case "preformatted":
+                this.outputSettingVisible("pre");
+                break;
+            case "editable":
+                this.outputSettingVisible("area");
+                break;
+            default:
+                console.warn("WARNING: Visibility option " + outputType.value + " undefined.");
+                break;
+        }
     };
     Main.prototype.addChance = function () {
         /* Read input form values */
@@ -88,12 +113,12 @@ var Lots = /** @class */ (function () {
     ;
     Object.defineProperty(Lots, "I", {
         get: function () { return this.Instance; },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Object.defineProperty(Lots.prototype, "lotsRequired", {
         get: function () { return Math.pow(this.lotsBase, this.lotsMultiplier); },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Object.defineProperty(Lots.prototype, "totalSpaceCount", {
@@ -109,7 +134,7 @@ var Lots = /** @class */ (function () {
             });
             return totalSpaces;
         },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     /** When 'exponent' value is > 1, we want to split the lot numbers/identifiers up,
@@ -160,6 +185,8 @@ var Lots = /** @class */ (function () {
         }
         getPreElement("lotsText").innerText = lotStr;
         getPreElement("lotsText").style.backgroundColor = "#00FF00";
+        getInputElement("lotsTextArea").value = lotStr;
+        getInputElement("lotsTextArea").style.backgroundColor = "#00FF00";
     };
     Lots.prototype.refresh = function () {
         this.clear();
@@ -180,7 +207,7 @@ var Participants = /** @class */ (function () {
     ;
     Object.defineProperty(Participants, "I", {
         get: function () { return this.Instance; },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Object.defineProperty(Participants.prototype, "poolSpace", {
@@ -192,7 +219,7 @@ var Participants = /** @class */ (function () {
             }
             return space;
         },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Object.defineProperty(Participants.prototype, "poolParts", {
@@ -206,7 +233,7 @@ var Participants = /** @class */ (function () {
             }
             return parts;
         },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Participants.prototype.idExists = function (id) {
@@ -243,10 +270,13 @@ var Participants = /** @class */ (function () {
         if (this.getLargestPool().poolCount > Lots.I.lotsRequired) {
             getPreElement("lotsText").innerText = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
             getPreElement("lotsText").style.backgroundColor = "#FF0000";
+            getInputElement("lotsTextArea").value = "Meer vermeldingen in grootste poel dan aantal loten om ze over te verdelen.";
+            getInputElement("lotsTextArea").style.backgroundColor = "#FF0000";
             return;
         }
         else {
             getPreElement("lotsText").innerText = "Populating...";
+            getInputElement("lotsTextArea").value = "Populating...";
         }
         //let's go, fill them lots up
         while (this.poolSpace > 0) {
@@ -335,6 +365,7 @@ var Participants = /** @class */ (function () {
         poolText = "Afrondingsmarge: " + this.prettyPercent(totalBenefit / Lots.I.totalSpaceCount) + "\n" + poolText;
         // add string to poolTextArea:
         getPreElement("partPools").innerText = poolText;
+        getInputElement("partPoolsArea").value = poolText;
     };
     /** Distribute a single pool item to a participant pool based on remainders */
     Participants.prototype.distributeARemainder = function () {
@@ -485,7 +516,7 @@ var Lot = /** @class */ (function () {
         get: function () {
             return this.spaces.length < this.spaceCount;
         },
-        enumerable: false,
+        enumerable: true,
         configurable: true
     });
     Lot.prototype.toString = function () {

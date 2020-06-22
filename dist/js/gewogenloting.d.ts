@@ -19,6 +19,8 @@ declare class Main {
     constructor();
     /** Attach some functionality to the buttons in the HTML */
     assignInput(): void;
+    outputSettingVisible(key: string): void;
+    updateOutputVisibility(): void;
     addChance(): void;
     refresh(): void;
     updateInputFields(): void;

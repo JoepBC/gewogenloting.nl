@@ -37,6 +37,10 @@
             padding: 8px;
         }
 
+        textarea.output {
+            background-color: orange;
+        }
+
         pre.output {
             background-color: orange;
         }
@@ -198,6 +202,7 @@
                     hieronder in spreadsheetprogramma, of print/publiceer het als tekst. <br />Deze data wil je
                     v&oacute;&oacute;r de trekking/loting met de belanghebbenden delen.</span></h3><br />
             <pre class="output" id="lotsText">Voeg eerst genoeg deelnemers toe.</pre>
+            <textarea class="output" id="lotsTextArea" cols="64" rows="16">Voeg eerst genoeg deelnemers toe.</textarea>
         </div>
 
 
@@ -206,9 +211,16 @@
                     van de deelnemers over alle loten. Streef naar een zo laag mogelijke afrondingsmarge door het
                     aantal loten aan te passen.</span></h3><br />
             <pre id="partPools">Voeg eerst genoeg deelnemers toe.</pre>
+            <textarea id="partPoolsArea" cols="64" rows="16">Voeg eerst genoeg deelnemers toe.</textarea>
         </div>
     </div>
     <div class="stack">
+        <h3>Weergave:</h3>
+        <form name="outputSetting">
+            <label><input type="radio" name="outputType" value="editable">TextArea</label>
+            <label><input type="radio" name="outputType" value="preformatted" checked />Preformatted</label>
+        </form>
+
         <h3>Meer informatie:</h3>
         <ul>
             <li><a href="https://youtu.be/wIGrJSQJi1w">Instructievideo (3:47) op YouTube</a></li>
@@ -217,7 +229,8 @@
         <br />
         <kbd><em>GewogenLoting.nl is zonder commercieel oogmerk ontwikkeld door Joep Bos-Coenraad</em></kbd>
     </div>
-    <script src="./dist/gewogenloting.js" type="text/javascript">
+
+    <script src="./js/gewogenloting.js" type="text/javascript">
     </script>
 
 </body>

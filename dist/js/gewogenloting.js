@@ -113,12 +113,12 @@ var Lots = /** @class */ (function () {
     ;
     Object.defineProperty(Lots, "I", {
         get: function () { return this.Instance; },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Lots.prototype, "lotsRequired", {
         get: function () { return Math.pow(this.lotsBase, this.lotsMultiplier); },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Lots.prototype, "totalSpaceCount", {
@@ -134,7 +134,7 @@ var Lots = /** @class */ (function () {
             });
             return totalSpaces;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     /** When 'exponent' value is > 1, we want to split the lot numbers/identifiers up,
@@ -207,7 +207,7 @@ var Participants = /** @class */ (function () {
     ;
     Object.defineProperty(Participants, "I", {
         get: function () { return this.Instance; },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Participants.prototype, "poolSpace", {
@@ -219,7 +219,7 @@ var Participants = /** @class */ (function () {
             }
             return space;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Participants.prototype, "poolParts", {
@@ -233,7 +233,7 @@ var Participants = /** @class */ (function () {
             }
             return parts;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Participants.prototype.idExists = function (id) {
@@ -300,8 +300,7 @@ var Participants = /** @class */ (function () {
     Participants.prototype.updateList = function () {
         var retStr = "";
         this.list.forEach(function (participant) {
-            var delHtml = "<span class=\"operation\" onclick=\"Main.DelUnit('" + participant.id + "')\">" +
-                "&#10060;</span>";
+            var delHtml = "<button class=\"operation\" onclick=\"Main.DelUnit('" + participant.id + "')\">&#10060;</button>";
             if (retStr.length < 1)
                 retStr = "<div class=\"parttable\"><table><tr><th>id:</th><td>" + participant.id + "</td></tr><tr><th>kans:</th><td>" + participant.chance + "</td></tr><tr><th>actie:</th><td>" + delHtml + "</td></tr></table></div>";
             else
@@ -516,7 +515,7 @@ var Lot = /** @class */ (function () {
         get: function () {
             return this.spaces.length < this.spaceCount;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Lot.prototype.toString = function () {

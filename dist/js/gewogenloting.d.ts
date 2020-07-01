@@ -3,6 +3,7 @@ declare function numberToBase26(integerValue: number, tail?: string): string;
 /**** HTML accessors *****/
 declare function getInputElement(id: string): HTMLInputElement;
 declare function getDivElement(id: string): HTMLDivElement;
+declare function getPreElement(id: string): HTMLPreElement;
 /**** HTML accessors *****/
 declare function rndFromArr<T>(anArray: T[]): T;
 declare class Main {
@@ -18,6 +19,8 @@ declare class Main {
     constructor();
     /** Attach some functionality to the buttons in the HTML */
     assignInput(): void;
+    outputSettingVisible(key: string): void;
+    updateOutputVisibility(): void;
     addChance(): void;
     refresh(): void;
     updateInputFields(): void;
